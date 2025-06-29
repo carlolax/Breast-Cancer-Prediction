@@ -9,3 +9,4 @@ data/*
 !data/README.md
 *.ipynb_checkpoints
 .DS_Store
+logs/

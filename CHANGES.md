@@ -1,5 +1,20 @@
 # Breast Cancer Prediction Project - Changelog
 
+## Version 0.0.2 (2025-06-30)
+
+### Added
+- Logging system implementation:
+  - Created `src/logger` with setup_logger functionality
+  - Configurable log levels (INFO, DEBUG, etc.)
+  - Console and file output handlers
+  - Custom formatted log messages with timestamps
+  - Log directory structure with separate log files per module
+  - Automatic log directory creation if not existing
+
+### Changed
+- Updated project structure to include logs directory
+- Added logs/ to .gitignore file to prevent log files from being tracked
+
 ## Version 0.0.1 (2025-06-29)
 
 ### Added

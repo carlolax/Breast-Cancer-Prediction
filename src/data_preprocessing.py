@@ -4,9 +4,12 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from joblib import dump
+from src.logger import setup_logger
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+
+logger = setup_logger('data-preprocessing')
 
 def load_dataset(data_path):
     column_names = ['id', 'diagnosis'] + [
@@ -16,12 +19,15 @@ def load_dataset(data_path):
         for stat in ['mean', 'se', 'worst']
     ]
 
-    df = pd.read_csv(data_path, header=None, names=column_names)
-    # Convert diagnosis to binary: Malignant (1) vs Benign (0)
-    df['diagnosis'] = df['diagnosis'].map({'M': 1, 'B': 0})
-
-    print(f"Data loaded successfully with shape: {df.shape}")
-    return df
+    try:
+        df = pd.read_csv(data_path, header=None, names=column_names)
+        # Convert diagnosis to binary: Malignant (1) vs Benign (0)
+        df['diagnosis'] = df['diagnosis'].map({'M': 1, 'B': 0})
+        logger.info(f"Data loaded successfully with shape: {df.shape}")
+        return df
+    except Exception as exception:
+        logger.error(f"Error loading data: {exception}")
+        return None
 
 def explore_dataset(df):
     print("\Basic Information:")
@@ -74,7 +80,7 @@ def visualize_data(df):
     plt.tight_layout()
     plt.savefig('../reports/figures/correlation_heatmap.png')
 
-    print("Visualizations saved in '../reports/figures' directory.")
+    logger.info("Visualizations saved in '../reports/figures' directory.")
 
 def save_processed_dataset(X_train, X_test, y_train, y_test, scaler, output_dir='../data/processed'):
     os.makedirs(output_dir, exist_ok=True)
@@ -84,4 +90,4 @@ def save_processed_dataset(X_train, X_test, y_train, y_test, scaler, output_dir=
     np.save(f"{output_dir}/y_test.npy", y_test)
     dump(scaler, f"{output_dir}/scaler.joblib")
 
-    print("Preprocessed data saved in '../data/processed' directory.")
+    logger.info("Preprocessed data saved in '../data/processed' directory.")

@@ -4,6 +4,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from joblib import dump
+from src.logger import setup_logger
 
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
@@ -15,6 +16,8 @@ from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
     confusion_matrix, classification_report, roc_curve, auc
 )
+
+logger = setup_logger('model-training')
 
 def load_processed_data(data_dir='../data/processed'):
     X_train = np.load(f"{data_dir}/X_train.npy")
@@ -29,6 +32,7 @@ def load_processed_data(data_dir='../data/processed'):
     return X_train, X_test, y_train, y_test
 
 def train_models(X_train, y_train):
+    logger.info("Starting model training.")
     models = {
         'Logistic Regression': LogisticRegression(random_state=42, max_iter=1000),
         'Decision Tree': DecisionTreeClassifier(random_state=42),
@@ -39,11 +43,14 @@ def train_models(X_train, y_train):
 
     trained_models = {}
     for name, model in models.items():
+        logger.info(f"Training {name} model.")
         print(f"Training {name} model.")
-        model.fit(X_train, y_train)
-        trained_models[name] = model
-        print(f"{name} model trained completed.\n")
-
+        try:
+            model.fit(X_train, y_train)
+            trained_models[name] = model
+            logger.info(f"{name} model trained completed.")
+        except Exception as exception:
+            logger.error(f"Error training {name} model: {str(exception)}")
     return trained_models
 
 def evaluate_model(model, X_test, y_test, model_name):
@@ -130,7 +137,7 @@ def visualize_results(models_results, X_test, y_test):
     plt.tight_layout()
     plt.savefig('../reports/figures/roc_curves.png')
 
-    print("Visualizations saved in '../reports/figures' directory.")
+    logger.info("Visualizations saved in '../reports/figures' directory.")
 
 def save_best_model(models_results, output_dir='../models'):
     os.makedirs(output_dir, exist_ok=True)

@@ -27,3 +27,41 @@ This project uses the Wisconsin Diagnostic Breast Cancer (WDBC) dataset, which c
 - `/src/`: Source code for the project
 - `/models/`: Saved model files
 - `/reports/`: Generated reports and visualizations
+
+## Project Modules
+
+### Data Preprocessing ([src/data_preprocessing.py](cci:7://file:///Users/carlo/Developer/notebooks/Breast-Cancer-Prediction/src/data_preprocessing.py:0:0-0:0))
+- Dataset loading and exploration
+- Feature engineering and selection
+- Data splitting and scaling
+- Basic data visualization
+
+### Model Training ([src/model_training.py](cci:7://file:///Users/carlo/Developer/notebooks/Breast%20Cancer%20Prediction/src/model_training.py:0:0-0:0))
+- Multiple classification algorithms
+- Model evaluation metrics
+- Performance visualization
+- Model persistence
+
+### Visualization ([src/visualization.py](cci:7://file:///Users/carlo/Developer/notebooks/Breast-Cancer-Prediction/src/visualization.py:0:0-0:0))
+- Advanced data visualization utilities
+- Standardized plots (histograms, box plots, correlation matrices)
+- Feature distribution analysis by class
+- ROC curves with confidence intervals using bootstrapping
+- Consistent styling and output formatting
+
+### Logging ([src/logger.py](cci:7://file:///Users/carlo/Developer/notebooks/Breast-Cancer-Prediction/src/logger.py:0:0-0:0))
+- Centralized logging configuration
+- Multi-level logging (INFO, DEBUG, WARNING, ERROR)
+- Console and file output handlers
+- Timestamped log messages
+- Module-specific log files
+
+## Usage
+
+### Setting Up the Environment
+```bash
+# Using conda
+conda env create -f environment.yaml
+
+# Using pip
+pip install -r requirements.txt

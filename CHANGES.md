@@ -1,5 +1,20 @@
 # Breast Cancer Prediction Project - Changelog
 
+## Version 0.0.3 (2025-07-01)
+
+### Added
+- Advanced data visualization module:
+  - Created [src/visualization.py](cci:7://file:///Users/carlo/Developer/notebooks/Breast-Cancer-Prediction/src/visualization.py:0:0-0:0) with specialized visualization functions
+  - Standardized plots (histograms, boxplots, correlation matrices)
+  - Feature distribution by class visualizations
+  - ROC curves with confidence intervals using bootstrap sampling
+  - Consistent styling and output formatting
+  - Integration with the logging system
+
+### Changed
+- Enhanced data preprocessing module to use the new visualization capabilities
+- Improved code modularity with better separation of concerns
+
 ## Version 0.0.2 (2025-06-30)
 
 ### Added

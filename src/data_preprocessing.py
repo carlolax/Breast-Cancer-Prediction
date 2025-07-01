@@ -1,13 +1,15 @@
 import os
 import numpy as np
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-from joblib import dump
-from src.logger import setup_logger
 
+from joblib import dump
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from src.logger import setup_logger
+from src.visualization import (
+    plot_standard_visualizations,
+    plot_feature_distribution_by_class
+)
 
 logger = setup_logger('data-preprocessing')
 
@@ -65,22 +67,12 @@ def preprocess_data(df, test_size=0.2, random_state=42):
 
     return X_train_scaled, X_test_scaled, y_train, y_test, scaler
 
-def visualize_data(df):
-    os.makedirs('../reports/figures', exist_ok=True)
-    plt.figure(figsize=(8, 6))
-    sns.countplot(x='diagnosis', data=df)
-    plt.title('Distribution of Benign (0) and Malignant (1) Cases')
-    plt.tight_layout()
-    plt.savefig('../reports/figures/class_distribution.png')
+def visualize_data(df):    
+    feature_cols = [col for col in df.columns if col not in ['id', 'diagnosis']]
 
-    plt.figure(figsize=(15, 12))
-    correlation_matrix = df.drop('id', axis=1).corr()
-    sns.heatmap(correlation_matrix, annot=False, cmap='coolwarm', linewidths=0.5)
-    plt.title('Feature Correlation Heatmap')
-    plt.tight_layout()
-    plt.savefig('../reports/figures/correlation_heatmap.png')
-
-    logger.info("Visualizations saved in '../reports/figures' directory.")
+    plot_standard_visualizations(df, feature_cols)
+    
+    plot_feature_distribution_by_class(df, feature_cols)
 
 def save_processed_dataset(X_train, X_test, y_train, y_test, scaler, output_dir='../data/processed'):
     os.makedirs(output_dir, exist_ok=True)

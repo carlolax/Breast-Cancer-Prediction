@@ -1,8 +1,7 @@
 import os
 import logging
 from datetime import datetime
-
-LOG_DIR = "/Users/carlo/Developer/notebooks/Breast-Cancer-Prediction/logs" # Changes this with your preferred logs directory
+from src.constants import LOG_DIR
 
 def setup_logger(log_name, log_level=logging.INFO):
     logger = logging.getLogger(f'breast-cancer-prediction.{log_name}')
@@ -26,5 +25,4 @@ def setup_logger(log_name, log_level=logging.INFO):
     file_handler.setFormatter(logger_formatter)
     logger.addHandler(file_handler)
 
-    logger.info(f"Logging started at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     return logger

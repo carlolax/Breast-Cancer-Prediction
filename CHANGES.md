@@ -1,5 +1,48 @@
 # Breast Cancer Prediction Project - Changelog
 
+## Version 0.0.4 (2025-07-03)
+
+### Added
+- Data validation functionality:
+  - Created `validate_dataset()` function in `src/data_preprocessing.py`
+  - Checks for expected columns, data types, and valid diagnosis values
+  - Returns validation status and detailed error messages
+  - Integrated with logging system
+
+- Missing data handling:
+  - Added `handle_missing_data()` function in `src/data_preprocessing.py`
+  - Drops rows with missing target values
+  - Drops columns with >30% missing values
+  - Performs median imputation for remaining missing numerical values
+  - Logs detailed statistics on missing data
+
+- Data versioning system:
+  - Implemented `create_dataset_version()` in `src/data_preprocessing.py`
+  - Generates hash-based version IDs for dataset snapshots
+  - Records comprehensive metadata including shape, types, and class distribution
+  - Saves versioned datasets as CSV with JSON metadata
+  - Ensures JSON serializability by converting NumPy/pandas types
+
+- Interactive visualizations:
+  - Added Plotly-based interactive visualization capabilities
+  - Created feature distribution plots with color-coding by class
+  - Added interactive scatter matrix for feature relationships
+  - Implemented 3D scatter plots for multi-dimensional analysis
+  - Created ROC curves with confidence intervals using bootstrapping
+  - Added descriptive captions to all visualizations
+
+### Changed
+- Enhanced standard visualizations with explanatory captions:
+  - Updated `plot_standard_visualizations()` function
+  - Added informative text explaining how to interpret each visualization
+  - Improved color schemes and layout for better readability
+
+- Updated notebook implementation:
+  - Restructured `notebooks/notebook.py` to use new functionality
+  - Added interactive visualization section with browser support
+  - Implemented buttons for opening visualizations directly from notebook
+  - Added detailed markdown documentation for each section
+
 ## Version 0.0.3 (2025-07-01)
 
 ### Added

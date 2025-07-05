@@ -1,5 +1,27 @@
 # Breast Cancer Prediction Project - Changelog
 
+## Version 0.0.5 (2025-07-05)
+
+### Added
+- Implemented comprehensive cross-validation framework in [src/model_training.py](cci:7://file:///Users/carlo/Developer/notebooks/Breast-Cancer-Prediction/src/model_training.py:0:0-0:0):
+  - [perform_cross_validation()](cci:1://file:///Users/carlo/Developer/notebooks/Breast-Cancer-Prediction/src/model_training.py:494:0-571:21) function with support for stratified k-fold CV
+  - Visualization functions for CV splits with class distribution highlighting
+  - Performance comparison plots across folds and models
+  - Standard deviation metrics to evaluate model stability
+- Added ensemble methods implementation in [src/model_training.py](cci:7://file:///Users/carlo/Developer/notebooks/Breast-Cancer-Prediction/src/model_training.py:0:0-0:0):
+  - Voting Classifiers (hard and soft voting)
+  - Bagging methods (Bagging with Decision Trees and Random Forest)
+  - Boosting algorithms (AdaBoost and Gradient Boosting)
+  - Stacking Classifier with multiple base estimators
+  - Visualization functions for ensemble method comparison
+  - ROC curve plots for performance evaluation
+
+### Updated
+- Integrated cross-validation and ensemble method sections in [notebooks/notebook.py](cci:7://file:///Users/carlo/Developer/notebooks/Breast-Cancer-Prediction/notebooks/notebook.py:0:0-0:0)
+- Updated import statements to include new functionality
+- Added compatibility fixes for scikit-learn 1.7.0 (parameter naming updates)
+- Enhanced visualization capabilities with comparative metrics analysis
+
 ## Version 0.0.4 (2025-07-03)
 
 ### Added

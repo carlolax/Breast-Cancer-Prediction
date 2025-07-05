@@ -11,6 +11,14 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import VotingClassifier, BaggingClassifier
+from sklearn.ensemble import AdaBoostClassifier, GradientBoostingClassifier, StackingClassifier
+from sklearn.model_selection import cross_validate, KFold, StratifiedKFold
+
+from sklearn.metrics import (
+    accuracy_score, precision_score, recall_score, f1_score,
+    confusion_matrix, classification_report, roc_curve, auc, make_scorer
+)
 
 from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
@@ -200,3 +208,481 @@ def feature_importance(models_results, X_train, feature_names=None):
                     print(f"{feature_names[indices[i]]}: {importances[indices[i]]:.4f}")
     else:
         print("No tree-based models found in results. Feature importance is only available for Random Forest and Decision Tree models.")
+
+def implement_ensemble_methods(X_train, y_train, X_test, y_test):
+    os.makedirs('../reports/ensemble_methods', exist_ok=True)
+
+    base_models = {
+        'Logistic Regression': LogisticRegression(random_state=42, max_iter=1000),
+        'Decision Tree': DecisionTreeClassifier(random_state=42),
+        'SVM': SVC(probability=True, random_state=42),
+        'KNN': KNeighborsClassifier(n_neighbors=5)
+    }
+
+    print("Training base models.")
+    base_results = []
+
+    for name, model in base_models.items():
+        model.fit(X_train, y_train)
+
+        y_pred = model.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred)
+        recall = recall_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred)
+
+        base_results.append({
+            'Model': name,
+            'Type': 'Base Model',
+            'Accuracy': accuracy,
+            'Precision': precision,
+            'Recall': recall,
+            'F1': f1
+        })
+
+        print(f"{name} - Accuracy: {accuracy:.4f}, F1: {f1:.4f}")
+
+    print("\nImplementing Voting Classifiers.")
+
+    voting_hard = VotingClassifier(
+        estimators=[
+            ('lr', base_models['Logistic Regression']),
+            ('dt', base_models['Decision Tree']),
+            ('svm', base_models['SVM']),
+            ('knn', base_models['KNN'])
+        ],
+        voting='hard'
+    )
+
+    voting_soft = VotingClassifier(
+        estimators=[
+            ('lr', base_models['Logistic Regression']),
+            ('dt', base_models['Decision Tree']),
+            ('svm', base_models['SVM']),
+            ('knn', base_models['KNN'])
+        ],
+        voting='soft'
+    )
+
+    voting_models = {
+        'Voting (Hard)': voting_hard,
+        'Voting (Soft)': voting_soft
+    }
+
+    for name, model in voting_models.items():
+        model.fit(X_train, y_train)
+
+        y_pred = model.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred)
+        recall = recall_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred)
+
+        base_results.append({
+            'Model': name,
+            'Type': 'Ensemble - Voting',
+            'Accuracy': accuracy,
+            'Precision': precision,
+            'Recall': recall,
+            'F1': f1
+        })
+
+        print(f"{name} - Accuracy: {accuracy:.4f}, F1: {f1:.4f}")
+
+    print("\nImplementing Bagging.")
+
+    bagging = BaggingClassifier(
+        estimator=DecisionTreeClassifier(random_state=42),
+        n_estimators=100,
+        max_samples=0.8,
+        max_features=0.8,
+        bootstrap=True,
+        bootstrap_features=False,
+        random_state=42
+    )
+
+    random_forest = RandomForestClassifier(
+        n_estimators=100,
+        max_depth=None,
+        random_state=42
+    )
+
+    bagging_models = {
+        'Bagging (Decision Trees)': bagging,
+        'Random Forest': random_forest
+    }
+
+    for name, model in bagging_models.items():
+        model.fit(X_train, y_train)
+
+        y_pred = model.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred)
+        recall = recall_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred)
+
+        base_results.append({
+            'Model': name,
+            'Type': 'Ensemble - Bagging',
+            'Accuracy': accuracy,
+            'Precision': precision,
+            'Recall': recall,
+            'F1': f1
+        })
+
+        print(f"{name} - Accuracy: {accuracy:.4f}, F1: {f1:.4f}")
+
+    print("\nImplementing Boosting.")
+
+    adaboost = AdaBoostClassifier(
+        estimator=DecisionTreeClassifier(max_depth=1),
+        n_estimators=100,
+        learning_rate=1.0,
+        random_state=42
+    )
+
+    gradient_boosting = GradientBoostingClassifier(
+        n_estimators=100,
+        learning_rate=0.1,
+        max_depth=3,
+        random_state=42
+    )
+
+    boosting_models = {
+        'AdaBoost': adaboost,
+        'Gradient Boosting': gradient_boosting
+    }
+
+    for name, model in boosting_models.items():
+        model.fit(X_train, y_train)
+
+        y_pred = model.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred)
+        recall = recall_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred)
+
+        base_results.append({
+            'Model': name,
+            'Type': 'Ensemble - Boosting',
+            'Accuracy': accuracy,
+            'Precision': precision,
+            'Recall': recall,
+            'F1': f1
+        })
+
+        print(f"{name} - Accuracy: {accuracy:.4f}, F1: {f1:.4f}")
+
+    print("\nImplementing Stacking.")
+
+    stacking = StackingClassifier(
+        estimators=[
+            ('lr', base_models['Logistic Regression']),
+            ('dt', base_models['Decision Tree']),
+            ('svm', base_models['SVM']),
+            ('knn', base_models['KNN'])
+        ],
+        final_estimator=LogisticRegression(random_state=42),
+        cv=5
+    )
+
+    stacking.fit(X_train, y_train)
+
+    y_pred = stacking.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+
+    base_results.append({
+        'Model': 'Stacking',
+        'Type': 'Ensemble - Stacking',
+        'Accuracy': accuracy,
+        'Precision': precision,
+        'Recall': recall,
+        'F1': f1
+    })
+    
+    print(f"Stacking - Accuracy: {accuracy:.4f}, F1: {f1:.4f}")
+
+    results_df = pd.DataFrame(base_results)
+
+    visualize_ensemble_results(results_df)
+
+    plot_roc_curves(
+        {**base_models, **voting_models, **bagging_models, **boosting_models, 'Stacking': stacking},
+        X_test, y_test
+    )
+
+    results_df.to_csv('../reports/ensemble_methods/ensemble_comparison.csv', index=False)
+
+    all_models = {
+        **base_models,
+        **voting_models,
+        **bagging_models,
+        **boosting_models,
+        'Stacking': stacking
+    }
+
+    return all_models
+
+def visualize_ensemble_results(results_df):
+
+    plt.figure(figsize=(15, 10))
+    sns.set(style="whitegrid")
+
+    metrics = ['Accuracy', 'Precision', 'Recall', 'F1']
+
+    for i, metric in enumerate(metrics):
+        plt.subplot(2, 2, i+1)
+
+        sns.barplot(
+            x='Model', 
+            y=metric, 
+            hue='Type',
+            data=results_df,
+            palette='viridis'
+        )
+
+        plt.title(f'Comparison of {metric}', fontsize=12)
+        plt.xticks(rotation=45, ha='right')
+        plt.legend(title='Model Type')
+        plt.tight_layout()
+
+    plt.suptitle('Ensemble Methods vs Base Models', fontsize=16, y=1.02)
+    plt.savefig('../reports/ensemble_methods/ensemble_comparison.png', bbox_inches='tight')
+    plt.close()
+
+    plt.figure(figsize=(12, 8))
+
+    heatmap_data = results_df.set_index('Model')[metrics]
+
+    sns.heatmap(heatmap_data, annot=True, fmt='.3f', cmap='viridis')
+    plt.title('Performance Metrics Across All Models')
+    plt.tight_layout()
+    plt.savefig('../reports/ensemble_methods/metrics_heatmap.png')
+    plt.close()
+
+def plot_roc_curves(models, X_test, y_test):
+    plt.figure(figsize=(12, 10))
+
+    colors = plt.cm.rainbow(np.linspace(0, 1, len(models)))
+
+    for (name, model), color in zip(models.items(), colors):
+        if hasattr(model, "predict_proba"):
+            y_prob = model.predict_proba(X_test)[:, 1]
+            fpr, tpr, _ = roc_curve(y_test, y_prob)
+            roc_auc = auc(fpr, tpr)
+
+            plt.plot(fpr, tpr, lw=2, color=color, 
+                     label=f'{name} (AUC = {roc_auc:.3f})')
+
+    plt.plot([0, 1], [0, 1], 'k--', lw=2)
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC Curves for All Models')
+    plt.legend(loc="lower right")
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.savefig('../reports/ensemble_methods/roc_curves.png')
+    plt.close()
+
+    print("ROC curves saved to '../reports/ensemble_methods/roc_curves.png'")
+
+def perform_cross_validation(X, y, models, cv_folds=5, stratified=True):
+    os.makedirs('../reports/cross_validation', exist_ok=True)
+
+    if stratified:
+        cv = StratifiedKFold(n_splits=cv_folds, shuffle=True, random_state=42)
+        cv_type = 'Stratified'
+    else:
+        cv = KFold(n_splits=cv_folds, shuffle=True, random_state=42)
+        cv_type = 'Standard'
+
+    print(f"Performing {cv_type} {cv_folds}-fold cross-validation")
+
+    scoring = {
+        'accuracy': 'accuracy',
+        'precision': make_scorer(precision_score),
+        'recall': make_scorer(recall_score),
+        'f1': make_scorer(f1_score)
+    }
+
+    cv_results = []
+
+    visualize_cv_splits(X, y, cv)
+
+    for name, model in models.items():
+        print(f"\nCross-validating {name}.")
+
+        scores = cross_validate(
+            model, X, y,
+            cv=cv,
+            scoring=scoring,
+            return_train_score=True,
+            n_jobs=-1
+        )
+
+        result = {metric: {} for metric in scoring.keys()}
+        print(f"Results for {name}:")
+
+        for metric in scoring.keys():
+            train_scores = scores[f'train_{metric}']
+            test_scores = scores[f'test_{metric}']
+
+            train_mean = np.mean(train_scores)
+            train_std = np.std(train_scores)
+            test_mean = np.mean(test_scores)
+            test_std = np.std(test_scores)
+
+            result[metric] = {
+                'train_mean': train_mean,
+                'train_std': train_std,
+                'test_mean': test_mean,
+                'test_std': test_std
+            }
+
+            print(f"  {metric.capitalize()}:")
+            print(f"    Train: {train_mean:.4f} ± {train_std:.4f}")
+            print(f"    Test:  {test_mean:.4f} ± {test_std:.4f}")
+
+        cv_results.append({
+            'Model': name,
+            'Accuracy': result['accuracy']['test_mean'],
+            'Accuracy_std': result['accuracy']['test_std'],
+            'Precision': result['precision']['test_mean'],
+            'Precision_std': result['precision']['test_std'],
+            'Recall': result['recall']['test_mean'],
+            'Recall_std': result['recall']['test_std'],
+            'F1': result['f1']['test_mean'],
+            'F1_std': result['f1']['test_std']
+        })
+
+        plot_fold_performance(scores, name, cv_folds)
+
+    results_df = pd.DataFrame(cv_results)
+
+    plot_model_comparison(results_df)
+
+    results_df.to_csv('../reports/cross_validation/cv_results.csv', index=False)
+
+    return results_df
+
+def visualize_cv_splits(X, y, cv):
+    plt.figure(figsize=(12, cv.n_splits * 1.2))
+
+    classes = np.unique(y)
+    colors = plt.cm.tab10(np.linspace(0, 1, len(classes)))
+    class_colors = {cls: color for cls, color in zip(classes, colors)}
+
+    for i, (train_idx, test_idx) in enumerate(cv.split(X, y)):
+        plt.subplot(cv.n_splits, 1, i+1)
+
+        train_classes = y[train_idx]
+        test_classes = y[test_idx]
+
+        for cls in classes:
+            cls_indices = train_idx[train_classes == cls]
+            if len(cls_indices) > 0:
+                plt.scatter(
+                    cls_indices, 
+                    np.ones(len(cls_indices)) * 0,
+                    c=[class_colors[cls]], 
+                    marker='|', 
+                    s=20,
+                    alpha=0.7,
+                    label=f'Train - Class {cls}' if i == 0 else None
+                )
+
+        for cls in classes:
+            cls_indices = test_idx[test_classes == cls]
+            if len(cls_indices) > 0:
+                plt.scatter(
+                    cls_indices, 
+                    np.ones(len(cls_indices)) * 0,
+                    c=[class_colors[cls]], 
+                    marker='o', 
+                    s=30,
+                    edgecolors='black',
+                    label=f'Validation - Class {cls}' if i == 0 else None
+                )
+
+        plt.yticks([])
+        plt.title(f'Fold {i+1}', loc='right')
+
+        class_dist_train = {cls: np.sum(train_classes == cls) for cls in classes}
+        class_dist_test = {cls: np.sum(test_classes == cls) for cls in classes}
+
+        class_info = ', '.join([f"Class {cls}: {class_dist_train[cls]}/{class_dist_test[cls]} (train/val)" for cls in classes])
+        plt.text(0.02, 0.5, class_info, transform=plt.gca().transAxes, fontsize=8)
+
+        if i == 0:
+            plt.legend(loc='upper right', ncol=len(classes))
+
+        if i == cv.n_splits - 1:
+            plt.xlabel('Data points')
+
+    plt.suptitle('Cross-Validation Splits with Class Distribution')
+    plt.tight_layout()
+    plt.subplots_adjust(hspace=0.4)
+    plt.savefig('../reports/cross_validation/cv_splits.png')
+    plt.close()
+
+def plot_fold_performance(scores, model_name, cv_folds):
+    plt.figure(figsize=(10, 8))
+
+    metrics = ['accuracy', 'precision', 'recall', 'f1']
+
+    for i, metric in enumerate(metrics):
+        plt.subplot(2, 2, i+1)
+
+        plt.plot(range(1, cv_folds+1), scores[f'train_{metric}'], 
+                 'o-', label=f'Training {metric}')
+        plt.plot(range(1, cv_folds+1), scores[f'test_{metric}'], 
+                 'o-', label=f'Validation {metric}')
+
+        plt.xlabel('Fold')
+        plt.ylabel(f'{metric.capitalize()} Score')
+        plt.title(f'{metric.capitalize()} Across Folds')
+        plt.xticks(range(1, cv_folds+1))
+        plt.grid(True, alpha=0.3)
+        plt.legend()
+
+    plt.tight_layout()
+    plt.suptitle(f'Cross-Validation Performance: {model_name}', y=1.02)
+    plt.savefig(f'../reports/cross_validation/{model_name.replace(" ", "_")}_cv_performance.png')
+    plt.close()
+
+def plot_model_comparison(results_df):
+    plt.figure(figsize=(12, 8))
+
+    barWidth = 0.2
+    r1 = np.arange(len(results_df['Model']))
+    r2 = [x + barWidth for x in r1]
+    r3 = [x + barWidth for x in r2]
+    r4 = [x + barWidth for x in r3]
+    
+    plt.bar(r1, results_df['Accuracy'], width=barWidth, yerr=results_df['Accuracy_std'],
+           label='Accuracy', color='skyblue', edgecolor='black', capsize=7)
+    plt.bar(r2, results_df['Precision'], width=barWidth, yerr=results_df['Precision_std'],
+           label='Precision', color='lightgreen', edgecolor='black', capsize=7)
+    plt.bar(r3, results_df['Recall'], width=barWidth, yerr=results_df['Recall_std'],
+           label='Recall', color='salmon', edgecolor='black', capsize=7)
+    plt.bar(r4, results_df['F1'], width=barWidth, yerr=results_df['F1_std'],
+           label='F1 Score', color='purple', edgecolor='black', capsize=7)
+
+    plt.xlabel('Models', fontweight='bold')
+    plt.ylabel('Score', fontweight='bold')
+    plt.title('Cross-Validation Performance by Model')
+    plt.xticks([r + barWidth*1.5 for r in range(len(results_df['Model']))], 
+               results_df['Model'], rotation=45, ha='right')
+    plt.legend()
+
+    plt.grid(axis='y', linestyle='--', alpha=0.3)
+    plt.tight_layout()
+
+    plt.savefig('../reports/cross_validation/model_comparison.png')
+    plt.close()
